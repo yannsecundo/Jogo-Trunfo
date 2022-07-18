@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 export default class Card extends Component {
   render() {
@@ -16,30 +16,15 @@ export default class Card extends Component {
     return (
       <div className="card">
         <p data-testid="name-card">{cardName}</p>
-
-        <img data-testid="image-card" src={ cardImage } alt={ cardName } />
-
+        <img src={ cardImage } alt={ cardName } data-testid="image-card" />
         <p data-testid="description-card">{cardDescription}</p>
-
-        <div>
-          <p data-testid="attr1-card">{ cardAttr1 }</p>
-          <p data-testid="attr2-card">{ cardAttr2 }</p>
-          <p data-testid="attr3-card">{ cardAttr3 }</p>
-        </div>
-
+        <p data-testid="attr1-card">{cardAttr1}</p>
+        <p data-testid="attr2-card">{cardAttr2}</p>
+        <p data-testid="attr3-card">{cardAttr3}</p>
         <p data-testid="rare-card">{cardRare}</p>
-
         {cardTrunfo && <p data-testid="trunfo-card">Super Trunfo</p>}
-
-        <button
-          data-testid="delete-button"
-          onClick={ () => onDeleteButtonClick(cardName) }
-          type="button"
-        >
-          Excluir
-        </button>
-
       </div>
+
     );
   }
 }
