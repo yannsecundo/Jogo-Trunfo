@@ -99,7 +99,7 @@ export default class Form extends Component {
             <option value="muito raro">muito raro</option>
           </select>
           {hasTrunfo ? (
-            'Você já tem um Super Trunfo'
+            'Você já tem um Super Trunfo em seu baralho'
           ) : (
             <input
               type="checkbox"
