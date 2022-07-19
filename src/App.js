@@ -1,173 +1,177 @@
 import React from 'react';
-import Form from './components/Form';
+import FiltrosDeCards from './components/FiltrosDeCards';
 import Card from './components/Card';
+import Form from './components/Form';
 
-class App extends React.Component {
+export default class App extends React.Component {
   constructor() {
     super();
-
     this.state = {
-      cardName: '',
-      cardDescription: '',
-      cardImage: '',
-      cardAttr1: '0',
-      cardAttr2: '0',
-      cardAttr3: '0',
-      cardRare: 'normal',
-      cardTrunfo: false,
+      name: '',
+      description: '',
+      image: '',
+      attr1: '',
+      attr2: '',
+      attr3: '',
+      maxSumAttr: 210,
+      rare: 'normal',
+      trunfo: false,
       hasTrunfo: false,
       isSaveButtonDisabled: true,
-      saveCards: [],
+      cards: [],
     };
-
-    this.onInputChange = this.onInputChange.bind(this);
-    this.validate = this.validate.bind(this);
-    this.onSaveButtonClick = this.onSaveButtonClick.bind(this);
   }
 
-  onInputChange({ target }) {
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    const { name } = target;
+  containsTrufoInCards = () => {
+    const { cards } = this.state;
+    if (cards.length === 0) return false;
+    return cards.some((card) => card.trunfo);
+  };
 
-    this.setState({
-      [name]: value,
-    }, () => this.setState({
-      isSaveButtonDisabled: this.validate(),
-    }));
-  }
-
-  onSaveButtonClick(event) {
-    event.preventDefault();
-    const { cardName, cardDescription, cardImage, cardAttr1,
-      cardAttr2, cardAttr3, cardRare, cardTrunfo } = this.state;
-    if (cardTrunfo) {
-      this.setState((prevArray) => ({
-        cardName: '',
-        cardDescription: '',
-        cardImage: '',
-        cardAttr1: '0',
-        cardAttr2: '0',
-        cardAttr3: '0',
-        cardRare: 'normal',
-        cardTrunfo: false,
-        hasTrunfo: true,
-        saveCards: [...prevArray.saveCards, {
-          cardName,
-          cardDescription,
-          cardImage,
-          cardAttr1,
-          cardAttr2,
-          cardAttr3,
-          cardRare,
-          cardTrunfo,
-        }],
-      }));
-    } else {
-      this.setState((prevArray) => ({
-        cardName: '',
-        cardDescription: '',
-        cardImage: '',
-        cardAttr1: '0',
-        cardAttr2: '0',
-        cardAttr3: '0',
-        cardRare: 'normal',
-        cardTrunfo: false,
-        saveCards: [...prevArray.saveCards, {
-          cardName,
-          cardDescription,
-          cardImage,
-          cardAttr1,
-          cardAttr2,
-          cardAttr3,
-          cardRare,
-          cardTrunfo,
-        }],
-      }));
-    }
-  }
-
-  validate() {
-    const {
-      cardName,
-      cardDescription,
-      cardImage,
-      cardAttr1,
-      cardAttr2,
-      cardAttr3,
-    } = this.state;
+  validateButton = () => {
+    const { name, description, image, attr1, attr2, attr3 } = this.state;
 
     const maxValue = 90;
     const minValue = 0;
-    const maxSumAttr = 211;
+    const maxSumValue = 210;
 
-    if (cardAttr1 < minValue || cardAttr1 > maxValue
-      || cardAttr2 < minValue || cardAttr2 > maxValue
-      || cardAttr3 < minValue || cardAttr3 > maxValue
-    ) return true;
+    const notEmpty = name !== '' && description !== '' && image !== '';
 
-    const sumAttr = (Number(cardAttr1)
-    + Number(cardAttr2)
-    + Number(cardAttr3))
-    < maxSumAttr;
+    const maxSum = Number(attr1) + Number(attr2) + Number(attr3);
+    const isValidSum = maxSum <= maxSumValue;
 
-    return !(cardName && cardDescription && cardImage && sumAttr);
-  }
+    const maxInputValue = Number(attr1) <= maxValue
+      && Number(attr2) <= maxValue
+      && Number(attr3) <= maxValue;
 
-  btnClear(name) {
-    const { hasTrunfo } = this.state;
-    this.setState((prev) => ({
-      saveCards: prev.saveCards.filter((card) => card.cardName !== name) }));
-    if (hasTrunfo) {
-      this.setState({ hasTrunfo: false });
+    const minInputValue = Number(attr1) >= minValue
+      && Number(attr2) >= minValue
+      && Number(attr3) >= minValue;
+
+    this.setState(
+      {
+        attr1: Number(attr1) >= maxValue ? `${maxValue}` : attr1,
+        attr2: Number(attr2) >= maxValue ? `${maxValue}` : attr2,
+        attr3: Number(attr3) >= maxValue ? `${maxValue}` : attr3,
+      },
+      () => this.setState((prev) => ({
+        maxSumAttr:
+          maxSumValue
+          - (Number(prev.attr1) + Number(prev.attr2) + Number(prev.attr3)),
+      })),
+    );
+
+    if (notEmpty && isValidSum && maxInputValue && minInputValue) {
+      return false;
     }
-  }
+    return true;
+  };
+
+  onInputChange = ({ target }) => {
+    const { name } = target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+
+    this.setState(
+      {
+        [name]: value,
+      },
+      () => this.setState({
+        isSaveButtonDisabled: this.validateButton(),
+      }),
+    );
+  };
+
+  onSaveButtonClick = (event) => {
+    event.preventDefault();
+    const { name, description, image, attr1, attr2, attr3, rare, trunfo } = this.state;
+
+    this.setState(
+      (prev) => ({
+        name: '',
+        description: '',
+        image: '',
+        attr1: '0',
+        attr2: '0',
+        attr3: '0',
+        rare: 'normal',
+        trunfo: false,
+        cards: [
+          ...prev.cards,
+          { name, description, image, attr1, attr2, attr3, rare, trunfo },
+        ],
+      }),
+      () => this.setState({ hasTrunfo: this.containsTrufoInCards() }),
+    );
+  };
+
+  onDeleteButtonClick = (name) => {
+    this.setState(
+      (prev) => ({
+        cards: prev.cards.filter((card) => card.name !== name),
+      }),
+      () => this.setState({ hasTrunfo: this.containsTrufoInCards() }),
+    );
+  };
 
   render() {
     const {
-      cardName,
-      cardDescription,
-      cardAttr1,
-      cardAttr2,
-      cardAttr3,
-      cardImage,
-      cardRare,
-      cardTrunfo,
-      saveCards,
+      name,
+      description,
+      image,
+      attr1,
+      attr2,
+      attr3,
+      maxSumAttr,
+      rare,
+      trunfo,
+      hasTrunfo,
+      isSaveButtonDisabled,
+      cards,
     } = this.state;
+
     return (
-      <>
-        <Form
-          { ...this.state }
-          onInputChange={ this.onInputChange }
-          onSaveButtonClick={ this.onSaveButtonClick }
-        />
-        <Card
-          { ...{
-            cardName,
-            cardDescription,
-            cardAttr1,
-            cardAttr2,
-            cardAttr3,
-            cardImage,
-            cardRare,
-            cardTrunfo,
-          } }
-        />
-        {saveCards.map((card, index) => (
-          <section key={ index } className="renderCards">
+      <div>
+        <h1 className="header">Tryunfo</h1>
+        <div className="form-preview">
+          <Form
+            cardName={ name }
+            cardDescription={ description }
+            cardAttr1={ attr1 }
+            cardAttr2={ attr2 }
+            cardAttr3={ attr3 }
+            maxSumAttr={ maxSumAttr }
+            cardImage={ image }
+            cardRare={ rare }
+            cardTrunfo={ trunfo }
+            hasTrunfo={ hasTrunfo }
+            isSaveButtonDisabled={ isSaveButtonDisabled }
+            onInputChange={ this.onInputChange }
+            onSaveButtonClick={ this.onSaveButtonClick }
+          />
+          <div className="preview">
+            <h1>Preview</h1>
             <Card
-              { ...card }
+              cardName={ name }
+              cardDescription={ description }
+              cardAttr1={ attr1 }
+              cardAttr2={ attr2 }
+              cardAttr3={ attr3 }
+              cardImage={ image }
+              cardRare={ rare }
+              cardTrunfo={ trunfo }
+              onDeleteButtonClick={ this.onDeleteButtonClick }
+              preview={ false }
             />
-            <button
-              type="button"
-              data-testid="delete-button"
-              onClick={ () => this.btnClear(card.cardName) }
-            >
-              excluir
-            </button>
-          </section>))}
-      </>
+          </div>
+        </div>
+        <h1 className="all-cards">Todas as cartas</h1>
+
+        <FiltrosDeCards
+          cards={ cards }
+          onDeleteButtonClick={ this.onDeleteButtonClick }
+          preview
+        />
+      </div>
     );
   }
 }
-export default App;

@@ -13,8 +13,10 @@ export default class Card extends Component {
       cardRare,
       cardTrunfo,
     } = this.props;
+
+    const cardRareClass = cardRare === 'muito raro' ? 'muito-raro' : cardRare;
     return (
-      <div className="card">
+      <div className={ `card-container ${cardRareClass}` }>
         <p data-testid="name-card">{cardName}</p>
         <img src={ cardImage } alt={ cardName } data-testid="image-card" />
         <p data-testid="description-card">{cardDescription}</p>
